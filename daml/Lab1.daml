@@ -10,8 +10,8 @@ doubleMe x = 2 * x
 
 doubleUs x y = doubleMe x + doubleMe y 
 
-quadFunctionTest : Script ()
-quadFunctionTest = script do
+tests : Script ()
+tests = script do
     debug $ quadFunction 1 2 3
     debug $ doubleMe 3
     debug $ doubleUs 3 4

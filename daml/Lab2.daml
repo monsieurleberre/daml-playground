@@ -1,0 +1,33 @@
+module Lab2 where
+
+import Daml.Script
+import DA.List
+
+song = [
+    ("do", "a deer, a female deer"),
+    ("re", "a drop of golden sun"), 
+    ("mi", "a name, I call myself"), 
+    ("fa", "a long long way to run")
+ ]
+
+-- not allowed yet 🤣
+-- notesInOrder = map fst song
+-- versesInOrder = map snd song
+
+first = head song
+second = head (tail song)
+third = head (tail (tail song))
+fourth = head (tail (tail (tail song)))
+
+notesInOrder = [fst first, fst second, fst third, fst fourth]
+versesInOrder = [snd first, snd second, snd third, snd fourth]
+
+notesReversed = reverse notesInOrder
+versesReversed = reverse versesInOrder
+
+tests : Script ()
+tests = script do
+    debug notesInOrder
+    debug versesInOrder
+    debug notesReversed
+    debug versesReversed
