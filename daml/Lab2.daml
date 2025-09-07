@@ -1,8 +1,11 @@
 module Lab2 where
 
 import Daml.Script
-import DA.List
+import DA.List as List
+import DA.Map as Map
+import DA.Text (words)
 
+-- Problem 1
 song = [
     ("do", "a deer, a female deer"),
     ("re", "a drop of golden sun"), 
@@ -25,9 +28,28 @@ versesInOrder = [snd first, snd second, snd third, snd fourth]
 notesReversed = reverse notesInOrder
 versesReversed = reverse versesInOrder
 
-tests : Script ()
-tests = script do
+notesMap = Map.fromList (song)
+
+tests1 : Script ()
+tests1 = script do
     debug notesInOrder
     debug versesInOrder
     debug notesReversed
     debug versesReversed
+    debug $ Map.lookup "do" notesMap
+    debug $ Map.lookup "re" notesMap
+    debug $ Map.lookup "mi" notesMap
+    debug $ Map.lookup "fa" notesMap
+
+
+-- Problem 2
+termFrequency : Text -> Text -> Int
+termFrequency phrase term = do
+    let wordList = words phrase
+    let listOfOccurrences = List.filter (== term) wordList
+    let length = List.length listOfOccurrences
+    length
+
+test2 : Script ()
+test2 = script do
+    debug $ termFrequency "a long long way to run" "long"
