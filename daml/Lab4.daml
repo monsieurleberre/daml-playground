@@ -1,0 +1,86 @@
+module Lab4 where
+
+import Daml.Script
+import DA.Math (sqrt)
+
+-- Problem 1: Grade Letter
+
+getLetterGradeUsingIf: Decimal -> Text
+getLetterGradeUsingIf score =
+  if score >= 90.0 then "A"
+  else if score >= 80.0 then "B"
+  else if score >= 70.0 then "C"
+  else "F"
+
+getScoreUsingCase: Text -> Text	
+getScoreUsingCase grade =
+  case grade of
+    "A" -> "Score 90"
+    "B" -> "80 to 90"
+    "C" -> "70 to 80"
+    "F" -> "less than 70"
+    _   -> "Invalid grade letter"
+
+getLetterGradeUsingGuards: Decimal -> Text
+getLetterGradeUsingGuards score
+  | score >= 90.0 = "A"
+  | score >= 80.0 = "B"
+  | score >= 70.0 = "C"
+  | otherwise     = "F"
+
+getAverageGradeLetter: Decimal -> Decimal -> Text
+getAverageGradeLetter score1 score2 =
+  let average = (score1 + score2) / 2.0
+  in getLetterGradeUsingIf average 
+
+testGrades : Script ()
+testGrades = script do 
+    
+    debug $ getLetterGradeUsingIf 90.0
+    debug $ getLetterGradeUsingIf 85.0
+    debug $ getLetterGradeUsingIf 75.0
+    debug $ getLetterGradeUsingIf 65.00
+    debug "----------"
+    debug $ getScoreUsingCase "A"
+    debug $ getScoreUsingCase "B"
+    debug $ getScoreUsingCase "C"
+    debug $ getScoreUsingCase "F"
+    debug $ getScoreUsingCase "X"
+    debug "----------"
+    debug $ getLetterGradeUsingGuards 90.0
+    debug $ getLetterGradeUsingGuards 80.0
+    debug $ getLetterGradeUsingGuards 70.0
+    debug $ getLetterGradeUsingGuards 60.0
+    debug "----------"
+    debug $ getAverageGradeLetter 75.0 83.0
+    debug $ getAverageGradeLetter 95.0 83.0
+    debug $ getAverageGradeLetter 98.0 83.0
+    debug $ getAverageGradeLetter 60.0 70.0
+
+    return()
+
+    -- Problem 2 triangleArea
+
+triangleArea: List(Decimal) -> Either Text Decimal
+triangleArea sides
+        | length (filter (<= 0.0) sides) > 0 = 
+            Left "Error: Side of a triangle cannot be 0.0"
+        | length (sides) /= 3 =
+            Left "Error: Triangle has 3 sides"
+        | otherwise = case sides of
+            [a, b, c] ->
+                if a + b <= c || a + c <= b || b + c <= a then
+                    Left "Error: This can't be a triangle as sum of any two sides must be greater than the third"
+                else
+                    let s = (a + b + c) / 2.0
+                    in Right (sqrt (s * (s - a) * (s - b) * (s - c)))
+            _ -> Left "Error: invalid input"
+
+testTriangle = script do 
+
+    debug $ triangleArea [4.0, 2.0, 5.0]
+    debug $ triangleArea [1.0, 2.0, 3.0]
+    debug $ triangleArea [1.0, 2.0]
+    debug $ triangleArea [1.0, 2.0, 0.0]
+
+    return ()
