@@ -12,7 +12,7 @@ getLetterGradeUsingIf score =
   else if score >= 70.0 then "C"
   else "F"
 
-getScoreUsingCase: Text -> Text	
+getScoreUsingCase: Text -> Text
 getScoreUsingCase grade =
   case grade of
     "A" -> "Score 90"

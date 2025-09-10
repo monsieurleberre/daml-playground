@@ -1,7 +1,7 @@
-module Lab5 where
+module DF101.Lab5 where
 
 import Daml.Script
-import Lab2 (song, termFrequency)
+import DF101.Lab2 (song, termFrequency)
 import DA.Text (words)
 
 

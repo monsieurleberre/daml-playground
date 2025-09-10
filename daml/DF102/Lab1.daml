@@ -1,0 +1,86 @@
+module DF102.Lab1 where
+
+template CLPApplication  
+  with
+    customer : Party
+    airline : Party
+    name : Text
+    address: Text
+    email : Text
+    phone : Optional Text
+    appTimestamp : Time
+    dob: Date
+  where
+    signatory customer
+    observer airline
+
+    choice SubmitApplication : ContractId CLPApplication
+        with
+                customer : Party
+                airline : Party
+                name : Text
+                address: Text
+                email : Text
+                phone : Optional Text
+                appTimestamp : Time
+                dob: Date
+        where
+            controller customer
+                do
+                    create this
+                        with
+                            customer = customer
+                            airline = airline
+                            name = name
+                            address = address
+                            email = email
+                            phone = phone
+                            appTimestamp = appTimestamp
+                            dob = dob
+
+    choice AcceptApplication : ContractId CLPAccount
+        with
+            points : Int
+            accountTimestamp : Time
+        where
+            controller airline
+                do
+                    create CLPAccount with
+                        customer = customer
+                        airline = airline
+                        name = name
+                        address = address
+                        email = email
+                        phone = phone
+                        accountTimestamp = appTimestamp
+                        dob = dob
+                        points = 0
+                    
+    choice RejectApplication : ()
+        where
+            controller airline
+                do
+                    return ()
+
+template CLPAccount
+  with
+    customer : Party
+    airline : Party
+    name : Text
+    address: Text
+    email : Text
+    phone : Optional Text
+    accountTimestamp : Time
+    dob: Date
+    points: Int
+  where
+    signatory airline, customer
+
+    choice AddPoints : ContractId CLPAccount
+        with
+            pointsToAdd : Int
+        where
+            controller airline
+                do
+                    create this
+                        with points = points + pointsToAdd

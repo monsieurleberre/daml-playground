@@ -1,4 +1,4 @@
-module Lab6 where
+module DF101.Lab6 where
 
 import Daml.Script
 

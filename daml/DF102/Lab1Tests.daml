@@ -1,0 +1,46 @@
+module DF102.Lab1Tests where 
+
+import Daml.Script
+import DA.Date (toDateUTC, date, Month(Jan))
+import DA.Time (time)
+import DF102.Lab1
+
+testSubmitAndAcceptCLPApplication: Script () 
+testSubmitAndAcceptCLPApplication = script do 
+    alice <- allocateParty "Alice"
+    airline <- allocateParty "Epic Airlines"
+    now <- getTime 
+
+    -- Alice creates a blank CLPApplication
+    aliceCLPAppId <- submit alice do         
+        createCmd CLPApplication with  
+            customer = alice 
+            airline = airline 
+            name = ""
+            address = ""
+            email = ""
+            phone = Some ""
+            appTimestamp = now 
+            dob = date 1970 Jan 01
+
+    -- Alice submits the application with details filled in
+    aliceCLPAppId <- submit alice do 
+        exerciseCmd aliceCLPAppId SubmitApplication
+          with 
+              customer = alice
+              airline = airline
+              name = "Alice"
+              address = "123 Main St ABCD"
+              email = "alice@wonderland.io"
+              phone = Some "01-555-555-1234"
+              appTimestamp = now
+              dob = date 2000 Jan 05
+    
+    -- Airline accepts the application and creates a CLP account with Alice's data
+    aliceCLPAccount <- submit airline do 
+        exerciseCmd aliceCLPAppId AcceptApplication 
+            with 
+                points = 0
+                accountTimestamp = now
+
+    return ()   

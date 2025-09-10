@@ -1,4 +1,4 @@
-module Lab2 where
+module DF101.Lab2 where
 
 import Daml.Script
 import DA.List as List
