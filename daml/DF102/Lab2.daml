@@ -1,0 +1,72 @@
+module DF102.Lab2 where
+
+import Daml.Script
+import DA.Date (toDateUTC, date, Month(Jan))
+import DA.Time (time)
+import DA.Optional
+
+template CLPAccount  
+  with
+    customer : Party
+    airline : Party
+    id : Text
+    name : Text
+    address: Text
+    email : Text
+    phone : Optional Text
+    accountTimestamp : Time
+    dob: Date
+    points : Int
+  where
+    signatory customer, airline
+    observer airline
+    key (airline, id): (Party, Text)
+    maintainer key._1 
+
+template CLPApplication  
+  with
+    customer : Party
+    airline : Party
+    id: Text
+    name : Text
+    address: Text
+    email : Text
+    phone : Optional Text
+    appTimestamp : Time
+    dob: Date
+  where
+    signatory customer
+    observer airline
+
+    choice SubmitApplication : ContractId CLPApplication
+        controller customer
+        do
+            create this with
+                dob = dob
+                id = id
+                name = name
+                address = address
+                email = email
+                phone = phone
+                customer = customer
+
+    choice ReviewApplication : Optional (ContractId CLPAccount)
+        controller airline
+            do
+                existingAccount <- lookupByKey @CLPAccount (airline, id)
+                if (isSome existingAccount) then
+                    return None
+                else do
+                    now <- getTime
+                    newAccount <- create CLPAccount with
+                        customer = customer
+                        airline = airline
+                        id = id
+                        name = name
+                        address = address
+                        email = email
+                        phone = phone
+                        accountTimestamp = now
+                        dob = dob
+                        points = 0
+                    return (Some newAccount)
