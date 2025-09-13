@@ -1,0 +1,66 @@
+module DF102.Lab3 where
+
+import DF102.Lab2
+import DF102.Lab2Tests
+import Daml.Script
+import DA.Date
+import DA.Time (time)
+import DA.Optional
+import DA.List
+
+problem1: Script ()
+problem1 = script do
+    alice <- allocateParty "Alice"
+    bob <- allocateParty "Bob"
+    airline <- allocateParty "Epic Airlines"
+
+    setTime (time (date 2023 Mar 01) 10 30 0)
+    now <- getTime
+
+    -- Alice creates a blank CLPApplication
+    aliceCLPApplication <- submit alice do         
+        createCmd (mkAliceApplication alice airline now)
+
+    -- aliceAccount <- submit airline do 
+    --     exerciseCmd aliceCLPApplication ReviewApplication
+
+    -- Bob creates a blank CLPApplication
+    bobCLPApplication <- submit bob do         
+        createCmd (mkBobApplication bob airline now)
+
+    -- bobAccount <- submit airline do 
+    --     exerciseCmd bobCLPApplication ReviewApplication
+
+    allApplications <- query @CLPApplication airline
+    debug $ allApplications
+
+    let allApplicationsContractIds = map fst allApplications
+    debug $ allApplicationsContractIds
+
+    let allCustomerIds = map (\tuple-> tuple._2.id) allApplications
+    debug $ allCustomerIds
+
+    let customerIdsByContractIds = map (\(cid, customer) -> (cid, customer.id)) allApplications
+    debug $ customerIdsByContractIds
+
+    let zipItBack = zip allApplicationsContractIds allCustomerIds
+    debug $ zipItBack
+
+    ---- Part 2 ----
+    let reviewApplication =  (\applicationCid -> submit airline do 
+        exerciseCmd applicationCid ReviewApplication)
+
+    maybeAccounts <- mapA reviewApplication allApplicationsContractIds
+    let accountCids = catOptionals maybeAccounts
+    debug $ accountCids
+
+    let add100Points = (\cid -> submit airline do
+        exerciseCmd cid AddPoints with pointsToAdd = 100)
+    
+    accountCids <- mapA add100Points accountCids
+    debug $ accountCids
+
+    allAccountTuples <- query @CLPAccount airline
+    debug $ allAccountTuples
+
+    return ()

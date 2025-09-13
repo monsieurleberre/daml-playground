@@ -2,9 +2,36 @@ module DF102.Lab2Tests where
 
 import Daml.Script
 import DF102.Lab2
-import DA.Date (toDateUTC, date, Month(Jan), Month(Mar))
+import DA.Date
 import DA.Time (time)
 import DA.List
+
+
+
+
+mkAliceApplication : Party -> Party -> Time -> CLPApplication
+mkAliceApplication alice airline now = CLPApplication with
+    customer = alice
+    airline = airline
+    id = "123"
+    name = "Alice"
+    address = "Wonderland"
+    email = "alice@wonderland.io"
+    phone = Some "123-456-7890"
+    appTimestamp = now
+    dob = toDateUTC now
+
+mkBobApplication : Party -> Party -> Time -> CLPApplication
+mkBobApplication bob airline now = CLPApplication with
+    customer = bob
+    airline = airline
+    id = "456"
+    name = "Bob"
+    address = "Builder Street"
+    email = "bob@builderstreet.io"
+    phone = Some "987-654-3210"
+    appTimestamp = now
+    dob = toDateUTC now
 
 testSubmitAndAcceptCLPApplication: Script () 
 testSubmitAndAcceptCLPApplication = script do 
@@ -16,16 +43,7 @@ testSubmitAndAcceptCLPApplication = script do
 
     -- Alice creates a blank CLPApplication
     aliceCLPApplication1 <- submit alice do         
-        createCmd CLPApplication with  
-            customer = alice 
-            airline = airline 
-            id = "123"
-            name = "Alice"
-            address = "Wonderland"
-            email = "alice@wonderland.io"
-            phone = Some "123-456-7890"
-            appTimestamp = now 
-            dob = toDateUTC now
+        createCmd (mkAliceApplication alice airline now)
 
     -- Alice submits the application with details filled in
     aliceCLPApplication1 <- submit alice do 
@@ -37,16 +55,7 @@ testSubmitAndAcceptCLPApplication = script do
 
     -- Alice creates another blank application
     aliceCLPApplication2 <- submit alice do         
-        createCmd CLPApplication with  
-            customer = alice 
-            airline = airline 
-            id = "123"
-            name = "Alice"
-            address = "Wonderland"
-            email = "alice@wonderland.org"
-            phone = Some "123-456-7890"
-            appTimestamp = now 
-            dob = toDateUTC now
+        createCmd (mkAliceApplication alice airline now)
 
    -- Alice submits another application with details filled in with the same 'id'
     aliceCLPApplication2 <- submit alice do 
@@ -61,17 +70,8 @@ testSubmitAndAcceptCLPApplication = script do
     bob <- allocateParty "Bob"
 
     bobCLPAccountApplication <- submit bob do
-        createCmd CLPApplication with
-            customer = bob
-            airline = airline
-            id = "456"
-            name = "Bob"
-            address = "Builder Street"
-            email = "bob@builderstreet.io"
-            phone = Some "987-654-3210"
-            appTimestamp = now
-            dob = toDateUTC now
-
+        createCmd (mkBobApplication bob airline now)
+        
     bobCLPAccountApplication <- submit bob do
         exerciseCmd bobCLPAccountApplication SubmitApplication
 
