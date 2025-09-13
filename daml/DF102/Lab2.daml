@@ -23,6 +23,13 @@ template CLPAccount
     key (airline, id): (Party, Text)
     maintainer key._1 
 
+    choice AddPoints: ContractId CLPAccount
+        with pointsToAdd : Int
+      controller airline
+        do
+          let newPoints = points + pointsToAdd
+          create this with points = newPoints
+
 template CLPApplication  
   with
     customer : Party

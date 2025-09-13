@@ -4,6 +4,7 @@ import Daml.Script
 import DF102.Lab2
 import DA.Date (toDateUTC, date, Month(Jan), Month(Mar))
 import DA.Time (time)
+import DA.List
 
 testSubmitAndAcceptCLPApplication: Script () 
 testSubmitAndAcceptCLPApplication = script do 
@@ -54,5 +55,41 @@ testSubmitAndAcceptCLPApplication = script do
     -- Airline reviews it but no new account for Alice should be created
     aliceClpAccount2 <- submit airline do 
         exerciseCmd aliceCLPApplication2 ReviewApplication 
+
+    ------ Problem 2 ------
+    -- here comes Bob
+    bob <- allocateParty "Bob"
+
+    bobCLPAccountApplication <- submit bob do
+        createCmd CLPApplication with
+            customer = bob
+            airline = airline
+            id = "456"
+            name = "Bob"
+            address = "Builder Street"
+            email = "bob@builderstreet.io"
+            phone = Some "987-654-3210"
+            appTimestamp = now
+            dob = toDateUTC now
+
+    bobCLPAccountApplication <- submit bob do
+        exerciseCmd bobCLPAccountApplication SubmitApplication
+
+    bobCLPAccount <- submit airline do
+        exerciseCmd bobCLPAccountApplication ReviewApplication
+
+    allAccounts <- query @CLPAccount airline
+    assertMsg "There should be exactly 2 CLP accounts" (length allAccounts == 2)
+
+    -- Get the first contract ID from allAccounts
+    let firstAccountCid = head [cid | (cid, _) <- allAccounts]
+    -- Airline adds 100 points to the first account and 200 to the second
+    _ <- submit airline do
+        exerciseCmd firstAccountCid AddPoints with pointsToAdd = 100
+
+
+    let lastAccount = last (map fst allAccounts)
+    _ <- submit airline do
+        exerciseCmd lastAccount AddPoints with pointsToAdd = 200
 
     return()
