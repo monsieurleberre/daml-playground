@@ -1,8 +1,7 @@
 module DF102.Lab1Tests where 
 
 import Daml.Script
-import DA.Date (toDateUTC, date, Month(Jan))
-import DA.Time (time)
+import DA.Date (date, Month(Jan))
 import DF102.Lab1
 
 testSubmitAndAcceptCLPApplication: Script () 

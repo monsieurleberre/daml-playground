@@ -1,0 +1,24 @@
+module DF103.Main where
+
+import Daml.Script
+import DF103.Lab1
+
+setup: Script()
+setup = script do
+
+    -- allocate parties
+    alice <- allocatePartyWithHint "Alice" (PartyIdHint "Alice")
+    airline <- allocatePartyWithHint "Epic" (PartyIdHint "Epic")
+
+    aliceId <- validateUserId "AliceUser"
+    airlineId <- validateUserId "EpicUser"
+
+    aliceUser <- createUser (User aliceId (Some alice)) [ CanActAs alice]
+    airlineUser <- createUser (User airlineId (Some airline)) [ CanActAs airline]
+
+    airlineService <- submit airline do
+        createCmd AirlineService with
+            airline = airline
+            customer = alice
+
+    return ()   

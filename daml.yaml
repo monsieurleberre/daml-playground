@@ -4,7 +4,7 @@
 sdk-version: 2.10.2
 name: daml-playground
 source: daml
-init-script: Main:quadFunctionTest
+init-script: DF103.Main:setup
 version: 0.0.1
 dependencies:
   - daml-prim

@@ -1,0 +1,29 @@
+module DF103.Lab1 where
+
+import DF102.Lab2
+import DA.Date (toDateUTC)
+
+template AirlineService 
+  with
+    airline : Party
+    customer : Party
+  where
+    signatory airline
+    observer customer
+
+
+    nonconsuming choice CreateBlankClpApplication : ContractId CLPApplication with
+       customer : Party
+     controller customer
+        do
+           now <- getTime
+           create CLPApplication with
+               customer = customer
+               airline = airline
+               id = ""
+               name = ""
+               address = ""
+               email = ""
+               phone = None
+               appTimestamp = now
+               dob = toDateUTC now

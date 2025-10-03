@@ -61,7 +61,7 @@ testGrades = script do
 
     -- Problem 2 triangleArea
 
-triangleArea: List(Decimal) -> Either Text Decimal
+triangleArea: [Decimal] -> Either Text Decimal
 triangleArea sides
         | length (filter (<= 0.0) sides) > 0 = 
             Left "Error: Side of a triangle cannot be 0.0"

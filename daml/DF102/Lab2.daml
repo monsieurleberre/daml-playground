@@ -1,8 +1,5 @@
 module DF102.Lab2 where
 
-import Daml.Script
-import DA.Date (toDateUTC, date, Month(Jan))
-import DA.Time (time)
 import DA.Optional
 
 template CLPAccount  
@@ -44,6 +41,27 @@ template CLPApplication
   where
     signatory customer
     observer airline
+
+    choice EditApplication : ContractId CLPApplication
+        with
+            id: Text
+            name : Text
+            address: Text
+            email : Text
+            phone : Optional Text
+            appTimestamp : Time
+            dob: Date
+        controller customer
+        do
+            now <- getTime
+            create this with
+                dob = dob
+                id = id
+                name = name
+                address = address
+                email = email
+                phone = phone
+                appTimestamp = now
 
     choice SubmitApplication : ContractId CLPApplication
         controller customer
