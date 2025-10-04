@@ -1,6 +1,7 @@
 module DF102.Lab2 where
 
 import DA.Optional
+import DA.Text (length)
 
 template CLPAccount  
   with
@@ -41,7 +42,7 @@ template CLPApplication
   where
     signatory customer
     observer airline
-
+    ensure (DA.Text.length id > 4)
     choice EditApplication : ContractId CLPApplication
         with
             id: Text
@@ -78,19 +79,20 @@ template CLPApplication
         controller airline
             do
                 existingAccount <- lookupByKey @CLPAccount (airline, id)
-                if (isSome existingAccount) then
-                    return None
-                else do
-                    now <- getTime
-                    newAccount <- create CLPAccount with
-                        customer = customer
-                        airline = airline
-                        id = id
-                        name = name
-                        address = address
-                        email = email
-                        phone = phone
-                        accountTimestamp = now
-                        dob = dob
-                        points = 0
-                    return (Some newAccount)
+                -- assertMsg "Account with this ID already exists" (isNone existingAccount)
+                -- abort "Account with this ID already exists"
+                trace "Account with this ID already exists" (return None)
+                trace ("Creating account for " <> show customer) do
+                now <- getTime
+                newAccount <- create CLPAccount with
+                    customer = customer
+                    airline = airline
+                    id = id
+                    name = name
+                    address = address
+                    email = email
+                    phone = phone
+                    accountTimestamp = now
+                    dob = dob
+                    points = 0
+                return (Some newAccount)

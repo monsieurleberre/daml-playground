@@ -1,0 +1,99 @@
+module DF103.Lab3 where
+
+import DF103.Lab2
+import DF102.Lab2
+import DF103.Lab1
+
+import Daml.Script
+import DA.Date (date, Month(Jan))
+
+
+testScript : Script ()
+testScript = script do
+    CLPData{..} <- setupCLPData "Alice" "Bob" "Epic"
+    debug customer1
+    debug customer2
+    debug airline
+    debug airlineServiceCid
+
+    aliceApplicationCid <- submit customer1 do 
+        exerciseCmd airlineServiceCid CreateBlankClpApplication with customer = customer1
+
+    trace "Trying to edit application with too short ID" (submitMustFail customer1 do
+        exerciseCmd aliceApplicationCid EditApplication with
+            id = "125"
+            name = "Alice"
+            address = "Wonderland"
+            email = "alice@example.com"
+            phone = Some "123-456-7890"
+            dob = date 2000 Jan 01)
+
+    aliceApplicationCid <- submit customer1 do
+        exerciseCmd aliceApplicationCid EditApplication with
+            id = "12345"
+            name = "Alice"
+            address = "Wonderland"
+            email = "alice@example.com"
+            phone = Some "123-456-7890"
+            dob = date 2000 Jan 01
+
+    aliceApplicationCid <- submit customer1 do
+        exerciseCmd aliceApplicationCid SubmitApplication
+
+    aliceAccountCid <- submit airline do 
+        exerciseCmd aliceApplicationCid ReviewApplication
+
+    bobAirlineServiceCid <- submit airline do
+        createCmd AirlineService with
+            airline = airline
+            customer = customer2
+
+    bobApplication <- submit customer2 do
+        exerciseCmd bobAirlineServiceCid CreateBlankClpApplication with customer = customer2
+
+    bobApplication <- submit customer2 do
+        exerciseCmd bobApplication EditApplication with
+            id = "12345"
+            name = "Bob"
+            address = "Builder Street"
+            email = "bob@example.com"
+            phone = Some "987-654-3210"
+            dob = date 2000 Jan 01
+
+    trace "Bob tries to submit application with same ID as Alice" (submit customer2 do
+        exerciseCmd bobApplication SubmitApplication)
+
+    trace "Application rejected due to duplicate ID" (submitMustFail airline do
+        exerciseCmd bobApplication ReviewApplication)
+
+    trace "Bob tries to edit the old application" (submitMustFail customer2 do
+        exerciseCmd bobApplication EditApplication with
+            id = "345678"
+            name = "Bob"
+            address = "Builder Street"
+            email = "bob@example.com"
+            phone = Some "987-654-3210"
+            dob = date 2000 Jan 01)
+
+    trace "Bob tries to re-submit the old application" (submitMustFail customer2 do
+        exerciseCmd bobApplication SubmitApplication)
+
+    bobApplication <- submit customer2 do
+        exerciseCmd bobAirlineServiceCid CreateBlankClpApplication with customer = customer2
+
+    bobApplication <- submit customer2 do
+        exerciseCmd bobApplication EditApplication with
+            id = "345678"
+            name = "Bob"
+            address = "Builder Street"
+            email = "bob@example.com"
+            phone = Some "987-654-3210"
+            dob = date 2000 Jan 01
+
+    bobApplication <- submit customer2 do
+        exerciseCmd bobApplication SubmitApplication
+
+    bobAccountCid <- submit airline do
+        exerciseCmd bobApplication ReviewApplication
+
+    return ()

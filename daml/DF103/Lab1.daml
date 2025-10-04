@@ -20,7 +20,7 @@ template AirlineService
            create CLPApplication with
                customer = customer
                airline = airline
-               id = ""
+               id = "******"
                name = ""
                address = ""
                email = ""

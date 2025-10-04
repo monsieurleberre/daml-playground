@@ -4,7 +4,6 @@ import DF102.Lab2
 import DF103.Lab1
 import Daml.Script
 import DA.Date (date, Month(Jan))
-import DA.Optional (isSome)
 
 data CLPData = CLPData with
     customer1 : Party
@@ -52,7 +51,7 @@ unhappyPath = script do
     
     clpAppId <- trace "Alice adds application details" (submit customer1 do
         exerciseCmd clpAppId EditApplication with
-            id = "123"
+            id = "123456"
             name = "Alice"
             address = "Wonderland"
             email = "alice@wonderland.com"
