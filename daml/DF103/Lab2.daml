@@ -1,0 +1,80 @@
+module DF103.Lab2 where
+
+import DF102.Lab2
+import DF103.Lab1
+import Daml.Script
+import DA.Date (date, Month(Jan))
+import DA.Optional (isSome)
+
+data CLPData = CLPData with
+    customer1 : Party
+    customer2 : Party
+    airline : Party
+    airlineServiceCid : ContractId AirlineService
+
+setupCLPData : Text -> Text -> Text -> Script CLPData
+setupCLPData customer1Name customer2Name airlineName = script do
+    customer1 <- allocatePartyWithHint customer1Name (PartyIdHint customer1Name)
+    customer2 <- allocatePartyWithHint customer2Name (PartyIdHint customer2Name)
+    airline <- allocatePartyWithHint airlineName (PartyIdHint airlineName)
+
+    airlineServiceCid <- submit airline do
+        createCmd AirlineService with
+            airline = airline
+            customer = customer1
+
+    return CLPData with
+        customer1 = customer1
+        customer2 = customer2
+        airline = airline
+        airlineServiceCid = airlineServiceCid
+
+
+testScript1: Script () 
+testScript1 = script do 
+    clpData <- setupCLPData "Alice" "Bob" "Epic"
+    debug clpData.customer1
+    debug clpData.customer2
+    debug clpData.airline
+    debug clpData.airlineServiceCid
+    return ()
+
+unhappyPath: Script ()
+unhappyPath = script do
+    CLPData{..} <- setupCLPData "Alice" "Bob" "Epic"
+    debug "Unhappy path test"
+
+    clpAppId <- trace "Alice Submits application" (submit customer1 do 
+        exerciseCmd airlineServiceCid CreateBlankClpApplication with customer = customer1)
+
+    trace "Bob Tries to Submit Alice's Application" (submitMustFail customer2 do
+        exerciseCmd clpAppId SubmitApplication)
+    
+    clpAppId <- trace "Alice adds application details" (submit customer1 do
+        exerciseCmd clpAppId EditApplication with
+            id = "123"
+            name = "Alice"
+            address = "Wonderland"
+            email = "alice@wonderland.com"
+            phone = Some "123-456-7890"
+            dob = date 2000 Jan 01)
+
+    trace "Bob Tries to Review Alice's Application" (submitMustFail customer2 do
+        exerciseCmd clpAppId ReviewApplication)
+
+    clpAppId <- trace "Alice submits her application" (submit customer1 do
+        exerciseCmd clpAppId SubmitApplication)
+
+    Some clpAccount <- trace "Airline reviews Alice application" (submit airline do
+        exerciseCmd clpAppId ReviewApplication)
+
+    trace "Airline tries to review Alice application again" (submitMustFail airline do
+        exerciseCmd clpAppId ReviewApplication)
+
+    clpAccount <- trace "Airline adds point to Alice account" (submit airline do
+        exerciseCmd clpAccount AddPoints with pointsToAdd = 100)
+
+    trace "Bob tries to add points to Alice account" (submitMustFail customer2 do
+        exerciseCmd clpAccount AddPoints with pointsToAdd = 50)
+
+    return ()

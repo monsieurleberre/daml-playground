@@ -49,7 +49,6 @@ template CLPApplication
             address: Text
             email : Text
             phone : Optional Text
-            appTimestamp : Time
             dob: Date
         controller customer
         do
